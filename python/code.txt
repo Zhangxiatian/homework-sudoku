@@ -1,0 +1,100 @@
+Sudoku.py
+class Sudoku:
+    GRID_SIZE = 9  # 定义为9列9行
+    BOX_SIZE = 3   # 定义同一个块为3
+
+    def __init__(self, input_str):
+        self.grid = [[0] * self.GRID_SIZE for _ in range(self.GRID_SIZE)]
+        self.parse(input_str)
+
+    # 解析字符串输入
+    def parse(self, input_str):
+        self.input_is_safe(input_str)
+        cnt = 0
+        for i in range(self.GRID_SIZE):
+            for j in range(self.GRID_SIZE):
+                self.grid[i][j] = int(input_str[cnt])
+                cnt += 1
+
+    # 检查输入是否正确
+    def input_is_safe(self, input_str):
+        if len(input_str) != 81:
+            raise ValueError("The input string length must be 81")
+
+    # 获取指定行的内容
+    def get_row(self, row):
+        return self.grid[row]
+
+    # 获取指定列的内容
+    def get_column(self, col):
+        return [self.grid[i][col] for i in range(self.GRID_SIZE)]
+
+    # 获取指定九宫格的内容
+    def get_box(self, row, col):
+        box = []
+        start_row = (row // self.BOX_SIZE) * self.BOX_SIZE
+        start_col = (col // self.BOX_SIZE) * self.BOX_SIZE
+        for i in range(start_row, start_row + self.BOX_SIZE):
+            for j in range(start_col, start_col + self.BOX_SIZE):
+                box.append(self.grid[i][j])
+        return box
+
+    # 检查特定位置的候选值
+    def get_candidate_values(self, row, col):
+        candidates = set(range(1, 10))  # 从1到9的候选值集合
+
+        # 检查所在行
+        row_values = self.get_row(row)
+        candidates -= set(row_values)
+
+        # 检查所在列
+        column_values = self.get_column(col)
+        candidates -= set(column_values)
+
+        # 检查所在的宫格
+        box_values = self.get_box(row, col)
+        candidates -= set(box_values)
+
+        return candidates
+
+    # 深度优先搜索法尝试解决问题
+    def inference(self):
+        for i in range(self.GRID_SIZE):
+            for j in range(self.GRID_SIZE):
+                if self.grid[i][j] == 0:
+                    candidates = self.get_candidate_values(i, j)
+                    for value in candidates:
+                        self.grid[i][j] = value  # 填入候选值
+                        if self.inference():  # 搜索下一格
+                            return True
+                        self.grid[i][j] = 0  # 回溯时重置相关值
+                    return False
+        return True  # 成功找到一种解决方法
+
+    # 获取并输出解
+    def get_answer(self):
+        if self.inference():
+            print("One of the sudoku answers is:")
+            self.print_grid()
+        else:
+            print("The sudoku has no solution.")
+
+    # 输出数独
+    def print_grid(self):
+        for row in self.grid:
+            print(" ".join(str(num) for num in row))
+
+
+
+
+
+
+
+test.py
+import Sudoku
+
+
+if __name__ == "__main__":
+    input_str = "017903600000080000900000507072010430000402070064370250701000065000030000005601720"
+    sudoku = Sudoku.Sudoku(input_str)
+    sudoku.get_answer()
